@@ -85,7 +85,6 @@ class Censys(Engine):
         q = dict2query(d)
         link = urlparse.urljoin(self._site, '/domain?' + q)
         while self._is_over_limit(link, limit):
-            print link
             content = self._fetch_page_content(link)
             link = self._fetch_next_page(link, content)
             if not link:
@@ -102,7 +101,7 @@ class Censys(Engine):
 
             return _csrf_token, _came_from
 
-        i_url = urlparse.urljoin(self._site, '/login')
+        i_url = 'https://www.censys.io/login'
         csrf_token, came_from = fetch_csrf_token(i_url)
         if csrf_token and came_from:
             post = {
