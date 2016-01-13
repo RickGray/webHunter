@@ -22,3 +22,4 @@ class EngineConnectionError(EngineError):
 
 
 from .google import Google
+from .baidu import Baidu
