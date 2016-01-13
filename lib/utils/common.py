@@ -14,7 +14,6 @@ def dict2query(d):
 
 
 def query2dict(q):
-    print q
     items = q.split('&')
     d = {}
     for item in items:
