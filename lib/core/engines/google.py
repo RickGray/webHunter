@@ -25,6 +25,7 @@ class Google(Engine):
 
     def __init__(self):
         self.maximum = 1000
+        self.pmax = 100
 
         self.sreq = requests.Session()
         self.sreq.headers['User-Agent'] = random_user_agent()
@@ -33,18 +34,17 @@ class Google(Engine):
 
     def _init(self):
         try:
-            _res = self.sreq.get(self._site)
+            self.sreq.get(self._site)
         except Exception, ex:
             err = 'Failed to connect "%s", ' % self._site
             err += str(ex)
             raise EngineConnectionError(err)
 
-    @staticmethod
-    def _is_over_limit(link, limit):
+    def _is_over_limit(self, link, limit):
         q = urlparse.urlparse(link).query
         d = query2dict(q)
 
-        return (int(d['start']) + int(d['num'])) <= limit
+        return (int(d['start']) + int(self.pmax)) <= limit
 
     @staticmethod
     def _fetch_next_page(prev_link, content):
@@ -56,13 +56,16 @@ class Google(Engine):
 
     def _fetch_page_content(self, link):
         try:
-            _res = self.sreq.get(link)
-            content = _res.content
-        except Exception, ex:
+            content = self.sreq.get(link).content
+        except any:
             content = ''
-            err = str(ex)
+            # err = str(ex)
 
         return content
+
+    def _process_redirection(self, res):
+        # TODO
+        pass
 
     def search(self, keyword, limit):
         self._init()
@@ -71,7 +74,7 @@ class Google(Engine):
             limit = self.maximum
         d = {
             'q': keyword,
-            'num': str(50),
+            'num': str(self.pmax),
             'start': str(0),
         }
         q = dict2query(d)
