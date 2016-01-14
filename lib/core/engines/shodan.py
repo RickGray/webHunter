@@ -13,6 +13,7 @@ from lib.utils.agents import random_user_agent
 from lib.utils.common import dict2query
 from lib.utils.common import query2dict
 from lib.utils.common import patch_url
+from lib.parse.confparse import conf
 
 
 _NAME = 'Shodan'
@@ -75,6 +76,10 @@ class Shodan(Engine):
 
     def search(self, keyword, limit):
         self._init()
+        try:
+            self._login()
+        except any:
+            pass
 
         if limit > self.maximum:
             limit = self.maximum
@@ -85,14 +90,15 @@ class Shodan(Engine):
         q = dict2query(d)
         link = urlparse.urljoin(self._site, '/search?' + q)
         while self._is_over_limit(link, limit):
-            print link
             content = self._fetch_page_content(link)
             link = self._fetch_next_page(link, content)
             if not link:
                 break
             yield content
 
-    def _login(self, username, password):
+    def _login(self):
+        username = conf.get('shodan', 'username')
+        password = conf.get('shodan', 'password')
         i_url = 'https://account.shodan.io/login'
         post = {
             'username': username,

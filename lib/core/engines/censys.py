@@ -13,6 +13,7 @@ from lib.utils.agents import random_user_agent
 from lib.utils.common import dict2query
 from lib.utils.common import query2dict
 from lib.utils.common import patch_url
+from lib.parse.confparse import conf
 
 
 _NAME = 'Censys'
@@ -75,6 +76,10 @@ class Censys(Engine):
 
     def search(self, keyword, limit):
         self._init()
+        try:
+            self._login()
+        except any:
+            pass
 
         if limit > self.maximum:
             limit = self.maximum
@@ -91,7 +96,10 @@ class Censys(Engine):
                 break
             yield content
 
-    def _login(self, username, password):
+    def _login(self):
+        username = conf.get('censys', 'username')
+        password = conf.get('censys', 'password')
+
         def fetch_csrf_token(login_url):
             _res = self.sreq.get(login_url)
             match = re.search(r'name="csrf_token" value="(?P<csrf_token>[^">].*)"', _res.content)
