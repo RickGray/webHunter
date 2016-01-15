@@ -49,15 +49,10 @@ class Shodan(Engine):
 
     @staticmethod
     def _fetch_next_page(prev_link, content):
-        q = urlparse.urlparse(prev_link).query
-        d = query2dict(q)
-        prev_page = d.get('page', '')
-        if prev_page:
-            match = re.search(r'<a href="(?P<next>[^">]*)".*?>Next', content)
-            next_link = match.group('next') if match else ''
+        match = re.search(r'<a href="(?P<next>[^">]*)".*?>Next', content)
+        next_link = match.group('next') if match else ''
+        if next_link:
             next_link = patch_url(prev_link, next_link)
-        else:
-            next_link = ''
 
         return next_link
 

@@ -50,7 +50,8 @@ class Google(Engine):
     def _fetch_next_page(prev_link, content):
         match = re.search(r'<a class="pn" href="(?P<next>[^"]*)" id="pnnext"', content)
         next_link = match.group('next') if match else ''
-        next_link = patch_url(prev_link, next_link)
+        if next_link:
+            next_link = patch_url(prev_link, next_link)
 
         return next_link
 
