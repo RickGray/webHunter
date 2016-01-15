@@ -74,7 +74,7 @@ class Censys(Engine):
         # TODO
         pass
 
-    def search(self, keyword, limit):
+    def search(self, keyword, limit, search_type=''):
         self._init()
         try:
             self._login()
@@ -88,8 +88,12 @@ class Censys(Engine):
             'page': str(1),
         }
         q = dict2query(d)
-        link = urlparse.urljoin(self._site, '/domain?' + q)
+        if search_type in ['ipv4', 'domain']:
+            link = urlparse.urljoin((self._site, ('/%s?' % search_type) + q))
+        else:
+            link = urlparse.urljoin(self._site, '/domain?' + q)
         while self._is_over_limit(link, limit):
+            print link
             content = self._fetch_page_content(link)
             link = self._fetch_next_page(link, content)
             if not link:
