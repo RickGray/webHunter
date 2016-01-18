@@ -4,6 +4,8 @@
 import re
 import urlparse
 
+import xml.etree.ElementTree as ET
+
 import thirdparty.requests as requests
 
 from lib.core.engines import Engine
@@ -46,15 +48,6 @@ class Google(Engine):
 
         return (int(d['start']) + int(self.pmax)) <= limit
 
-    @staticmethod
-    def _fetch_next_page(prev_link, content):
-        match = re.search(r'<a class="pn" href="(?P<next>[^"]*)" id="pnnext"', content)
-        next_link = match.group('next') if match else ''
-        if next_link:
-            next_link = patch_url(prev_link, next_link)
-
-        return next_link
-
     def _fetch_page_content(self, link):
         try:
             content = self.sreq.get(link).content
@@ -67,6 +60,29 @@ class Google(Engine):
     def _process_redirection(self, res):
         # TODO
         pass
+
+    @staticmethod
+    def _fetch_next_page(prev_link, content):
+        pattern = r'<a class="pn" href="(?P<next>[^"]*)" id="pnnext"'
+        match = re.search(pattern, content)
+        next_link = match.group('next') if match else ''
+        if next_link:
+            next_link = patch_url(prev_link, next_link)
+
+        return next_link
+
+    @staticmethod
+    def parse_results(content):
+        pattern = (r'<div class="rc".*?<h3 class="r">'
+                   r'<a href="(?P<link>[^">]*)".*?>(?P<title>[^">]*)</a></h3>')
+
+        results = []
+        for iterm in re.finditer(pattern, content):
+            # link, title = iterm.group('link'), iterm.group('title')
+            link = iterm.group('link')
+            results.append(link)
+
+        return results
 
     def search(self, keyword, limit):
         self._init()
